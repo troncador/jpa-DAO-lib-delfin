@@ -24,6 +24,10 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.Path;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -31,8 +35,13 @@ import org.slf4j.LoggerFactory;
 
 import cl.troncador.delfin.QueryException;
 import cl.troncador.delfin.db.query.OfficeCityQuery;
+import cl.troncador.delfin.db.table.Office;
 import cl.troncador.delfin.db.table.OfficeCity;
+import cl.troncador.delfin.db.table.OfficeCity_;
+import cl.troncador.delfin.db.table.Office_;
 import cl.troncador.delfin.model.table.SimpleQuery;
+import cl.troncador.delfin.query.constraint.PreparePredicate;
+import cl.troncador.delfin.query.constraint.PrepareQueryAdapter;
 import uk.co.jemos.podam.api.PodamFactory;
 import uk.co.jemos.podam.api.PodamFactoryImpl;
 
@@ -50,7 +59,34 @@ public class SaveMethodTest {
       entityManagerFactory=Persistence.createEntityManagerFactory("eclipselink");
       entityManager = entityManagerFactory.createEntityManager();
       
-      OfficeCityQuery officeCityQuery = new OfficeCityQuery(entityManager);
+      
+      
+      SimpleQuery<Office> officeQuery = new SimpleQuery<Office>(Office.class, entityManager);
+      
+      // the where condition
+//      PreparePredicate<Office> preparePredicate = new PreparePredicate<Office>() {
+//        @Override
+//        public Predicate getPredicate(Root<Office> root,
+//            CriteriaBuilder cb) {
+//          Path<String> cityName = root.join(Office_.officeCity).get(OfficeCity_.name);
+//          Path<Integer> officeId = root.get(Office_.id);
+//          Path<String> officeName = root.get(Office_.name);
+//          return cb.and(
+//             cb.equal(cityName, "London"),
+//             cb.greaterThan(officeId, 2),
+//             cb.notEqual(officeName, 2)
+//          );
+//        }
+//      };
+//      
+//      PrepareQueryAdapter<Office> prepareQueryAdapter = new PrepareQueryAdapter<Office>(preparePredicate);
+//      
+//      List<Office> listQuery = officeQuery.select(prepareQueryAdapter);
+//      
+//      long count = officeQuery.count(prepareQueryAdapter);
+//      
+//      long count = officeQuery.(prepareQueryAdapter);
+      
       
       List<OfficeCity> officeList = new ArrayList<OfficeCity>();
       
@@ -60,7 +96,7 @@ public class SaveMethodTest {
       }
 
       
-      List<OfficeCity> officeList2 = officeCityQuery.select();
+      List<Office> officeList2 = officeQuery.select();
       
       Collections.sort(officeList);
       Collections.sort(officeList2);
@@ -68,7 +104,7 @@ public class SaveMethodTest {
       for (int i =0; i < NUMBER_ELEMENTS ; i++) {
         assertEquals(officeList2.get(i),officeList.get(i));
       }
-      officeCityQuery.deleteAll();
+      officeQuery.deleteAll();
     } finally {
       if (entityManager != null) {
         entityManager.close();

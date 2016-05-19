@@ -33,7 +33,7 @@ public class TableIterable<T> implements Iterable<T>{
 	/**
 	 * The Enum Mode.
 	 */
-	public enum Mode {/** The for. */
+	public static enum Mode {/** The for. */
 FOR,/** The while. */
 WHILE}
 	

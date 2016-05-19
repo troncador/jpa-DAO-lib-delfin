@@ -4,28 +4,35 @@
 
 ## Code Example
 
+### Separate the "WHERE":
+One of the big ideas of this library is to separated the "where" condition and composite multiple "where" condition.
 
-```java
-entityManagerFactory=Persistence.createEntityManagerFactory("foo");
-entityManager = entityManagerFactory.createEntityManager();
-SimpleQuery<Office> query = new SimpleQuery<Office>(Office.class, entityManager)
+This sentence says: "where OfficeCity.cityName = 'London' and Office.id > 2 and Office.name <> 'Juan'".
  
+```java
 // the where condition
 PreparePredicate<Office> preparePredicate = new PreparePredicate<Office>() {
   @Override
-  public Predicate getPredicate(Root<Office> root,
-            CriteriaBuilder cb) {
+  public Predicate getPredicate(Root<Office> root, CriteriaBuilder cb) {
     Path<String> cityName = root.join(Office_.officeCity).get(OfficeCity_.name);
     Path<Integer> officeId = root.get(Office_.id);
     Path<String> officeName = root.get(Office_.name);
     return cb.and(
          cb.equal(cityName, "London"),
          cb.greaterThan(officeId, 2),
-         cb.notEqual(officeName, 2)
+         cb.notEqual(officeName, "Juan")
      );
   }
 };
-      
+
+```
+Then you can use the where condition in different sentences 
+
+```java
+entityManagerFactory=Persistence.createEntityManagerFactory("foo");
+entityManager = entityManagerFactory.createEntityManager();
+SimpleQuery<Office> query = new SimpleQuery<Office>(Office.class, entityManager)
+    
 PrepareQueryAdapter<Office> prepareQueryAdapter = new PrepareQueryAdapter<Office>(preparePredicate);
 
 // We can use the same condition to do different action like "select", "count" and "delete"  
@@ -36,7 +43,27 @@ long count = officeQuery.count(prepareQueryAdapter);
 officeQuery.delete(prepareQueryAdapter);
  
 ```
-The main condition to use SimpleQuery is that the table has to extends SimpleTable and implements BaseTable<Integer>.
+
+### Iterate throw the database:
+
+```java
+Iterable<Office> iterable = new TableIterable<Office>(
+     query, 
+     preparePredicate,  		// the where condition
+     10,						// how many row get select each time
+     TableIterable.Mode.FOR	    // the mode can be WHILE of FOR
+ );
+for(Office office: iterable){
+    
+}
+```
+The only difference between Mode.FOR an Mode.WHILE it is that WHILE will try to iterate until there is no row selected with the where condition and the FOR will go for each row only once.
+
+
+
+## Condition for use SimpleQuery:
+
+The only condition to use SimpleQuery is that the table has to extends SimpleTable and implements BaseTable<Integer>.
 
 
 ```java

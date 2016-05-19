@@ -16,7 +16,6 @@
 package cl.troncador.delfin.db.query;
 
 import javax.persistence.EntityManager;
-import javax.persistence.metamodel.SingularAttribute;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
